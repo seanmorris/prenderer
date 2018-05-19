@@ -11,6 +11,7 @@ export class Browser
 
 		const defaults = [
 			'--disable-gpu'
+			, '--no-sandbox'
 			, '--headless'
 		];
 

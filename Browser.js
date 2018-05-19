@@ -23,7 +23,7 @@ var Browser = exports.Browser = function () {
 
 		console.error('Starting chrome...');
 
-		var defaults = ['--disable-gpu', '--headless'];
+		var defaults = ['--disable-gpu', '--no-sandbox', '--headless'];
 
 		this.cdpClient = null;
 
