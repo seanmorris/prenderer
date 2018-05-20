@@ -16,11 +16,13 @@ export class Browser
 
 		this.cdpClient = null;
 
+		const path = require('path').dirname(require.main.filename);
+
 		this.chrome = launch({
 			chromeFlags: defaults
-			, 'userDataDir': '/home/sean/prenderer/.chrome-user'
+			, 'userDataDir': path + '/.chrome-user'
 			, envVars: {
-				'HOME' : '/home/sean/prenderer/.chrome-user'
+				'HOME' : path + '/.chrome-user'
 			}
 		}).then(chrome => {
 			this.chrome = chrome;

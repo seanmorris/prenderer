@@ -6,7 +6,19 @@ const args = process.argv.slice(2);
 
 const browser = new Browser((b)=>{
 
-	const url = args[0];
+	const url      = args[0];
+	const settings = {};
+
+	args.slice(1).map((arg)=>{
+		let groups = /^--(\w+)=?(.+)?/.exec(arg);
+
+		if(groups)
+		{
+			settings[groups[1]] = groups[2] || true;
+		}
+	});
+
+	console.error(settings);
 
 	browser.goto(url).then(()=>{
 		const setPrerenderCookie = () => {
@@ -17,7 +29,7 @@ const browser = new Browser((b)=>{
 			expression: `(${setPrerenderCookie})()`,
 		});
 
-		const listenForRenderEvent = () => {
+		const listenForRenderEvent = (timeout) => {
 			return new Promise((f,r)=>{
 				let docType = document.doctype
 					? new XMLSerializer().serializeToString(document.doctype)
@@ -29,15 +41,19 @@ const browser = new Browser((b)=>{
 					, (event) => f(docType + document.documentElement.outerHTML)
 				);
 
-				let timeout = setTimeout(
-					(args) => { f(docType + document.documentElement.outerHTML) }
-					, 5000
-				);
+				if(timeout)
+				{
+					let timeout = setTimeout(
+						(args) => { f(docType + document.documentElement.outerHTML) }
+						, parseInt(timeout)
+					);
+				}
+
 			});
 		};
 
 		b.Runtime.evaluate({
-			expression: `(${listenForRenderEvent})()`,
+			expression: `(${listenForRenderEvent})(${settings.timeout})`,
 			awaitPromise: true
 		}).then((result)=>{
 			console.log(result.result.value);

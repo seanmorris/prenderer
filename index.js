@@ -8,6 +8,17 @@ var args = process.argv.slice(2);
 var browser = new _Browser.Browser(function (b) {
 
 	var url = args[0];
+	var settings = {};
+
+	args.slice(1).map(function (arg) {
+		var groups = /^--(\w+)=?(.+)?/.exec(arg);
+
+		if (groups) {
+			settings[groups[1]] = groups[2] || true;
+		}
+	});
+
+	console.error(settings);
 
 	browser.goto(url).then(function () {
 		var setPrerenderCookie = function setPrerenderCookie() {
@@ -18,7 +29,7 @@ var browser = new _Browser.Browser(function (b) {
 			expression: '(' + setPrerenderCookie + ')()'
 		});
 
-		var listenForRenderEvent = function listenForRenderEvent() {
+		var listenForRenderEvent = function listenForRenderEvent(timeout) {
 			return new Promise(function (f, r) {
 				var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
 
@@ -26,14 +37,16 @@ var browser = new _Browser.Browser(function (b) {
 					return f(docType + document.documentElement.outerHTML);
 				});
 
-				var timeout = setTimeout(function (args) {
-					f(docType + document.documentElement.outerHTML);
-				}, 5000);
+				if (timeout) {
+					var _timeout = setTimeout(function (args) {
+						f(docType + document.documentElement.outerHTML);
+					}, parseInt(_timeout));
+				}
 			});
 		};
 
 		b.Runtime.evaluate({
-			expression: '(' + listenForRenderEvent + ')()',
+			expression: '(' + listenForRenderEvent + ')(' + settings.timeout + ')',
 			awaitPromise: true
 		}).then(function (result) {
 			console.log(result.result.value);

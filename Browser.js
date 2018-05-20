@@ -25,11 +25,13 @@ var Browser = exports.Browser = function () {
 
 		this.cdpClient = null;
 
+		var path = require('path').dirname(require.main.filename);
+
 		this.chrome = (0, _chromeLauncher.launch)({
 			chromeFlags: defaults,
-			'userDataDir': '/home/sean/prenderer/.chrome-user',
+			'userDataDir': path + '/.chrome-user',
 			envVars: {
-				'HOME': '/home/sean/prenderer/.chrome-user'
+				'HOME': path + '/.chrome-user'
 			}
 		}).then(function (chrome) {
 			_this.chrome = chrome;
