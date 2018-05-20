@@ -1,35 +1,49 @@
+#!/usr/bin/node
+
 import { Browser } from './Browser';
 
+const args = process.argv.slice(2);
+
 const browser = new Browser((b)=>{
-	browser.goto('https://isotope.seanmorr.is/').then((x)=>{
-		const browserCode = ()=>{
+
+	const url = args[0];
+
+	browser.goto(url).then(()=>{
+		const setPrerenderCookie = () => {
+			document.cookie = `prerenderer=prenderer`;
+		};
+
+		b.Runtime.evaluate({
+			expression: `(${setPrerenderCookie})()`,
+		});
+
+		const listenForRenderEvent = () => {
 			return new Promise((f,r)=>{
+				let docType = document.doctype
+					? new XMLSerializer().serializeToString(document.doctype)
+						+ "\n"
+					: '';
+				
 				document.addEventListener(
 					'renderComplete'
-					, (event) => f('Render Complete!')
+					, (event) => f(docType + document.documentElement.outerHTML)
 				);
 
-				setTimeout(
-					()=>{
-						const event = new Event('renderComplete');
-						document.dispatchEvent(event);
-					}
-					, 2500
+				let timeout = setTimeout(
+					(args) => { f(docType + document.documentElement.outerHTML) }
+					, 5000
 				);
 			});
 		};
 
 		b.Runtime.evaluate({
-			expression: `(${browserCode})()`,
+			expression: `(${listenForRenderEvent})()`,
 			awaitPromise: true
-		}).then((x)=>{
-			b.Runtime.evaluate({
-				expression: 'document.documentElement.outerHTML'
-			}).then((x)=>{
-				console.log(x.result.value);
+		}).then((result)=>{
+			console.log(result.result.value);
 
-				browser.kill();
-			});
+			browser.kill();
 		});
 	});
+
 });

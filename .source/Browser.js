@@ -1,7 +1,5 @@
 import { launch } from 'chrome-launcher';
-// import { CDP    } from 'chrome-remote-interface';
-
-const CDP = require('chrome-remote-interface');
+const CDP    = require('chrome-remote-interface');
 
 export class Browser
 {
@@ -10,20 +8,25 @@ export class Browser
 		console.error('Starting chrome...');
 
 		const defaults = [
-			'--disable-gpu'
-			, '--no-sandbox'
+			'--no-sandbox'
+			, '--disable-gpu'
 			, '--headless'
+			, '--enable-automation'
 		];
 
 		this.cdpClient = null;
 
 		this.chrome = launch({
 			chromeFlags: defaults
+			, 'userDataDir': '/home/sean/prenderer/.chrome-user'
+			, envVars: {
+				'HOME' : '/home/sean/prenderer/.chrome-user'
+			}
 		}).then(chrome => {
 			this.chrome = chrome;
 
 			this.port = chrome.port;
-			
+
 			console.error('Debug port: ' + this.port);
 
 			this.connect(ready);
@@ -40,31 +43,26 @@ export class Browser
 		return CDP({port: this.port}).then(client=>{
 			this.cdpClient = client;
 
-			return this.connected(this.cdpClient, ready);	
-		});		
+			const {Network, Page} = client;
 
-		// CDP({port: this.port}, (client) => {
-		// 	
-		// 	this.connected(client, ready);	
-		// }).on('error', (err) => {
-		// 	console.error(err);
-		// });
+			Network.requestWillBeSent((params) => {
+				console.error('Loading: ' + params.request.url);
+			});
+
+			Page.loadEventFired((params) => {
+				// console.error(params);
+				// console.error('Client Closed...');
+				// client.close();
+			});
+
+			return this.connected(this.cdpClient, ready);
+		});
 	}
 
 	connected(client, ready)
 	{
 		const {Network, Page} = client;
-		
-		Network.requestWillBeSent((params) => {
-			console.error('Loading: ' + params.request.url);
-		});
-		
-		Page.loadEventFired((params) => {
-			// console.error(params);
-			// console.error('Client Closed...');
-			// client.close();
-		});
-		
+
 		return Promise.all([
 			Network.enable(),
 			Page.enable()
@@ -80,7 +78,7 @@ export class Browser
 	kill()
 	{
 		console.error('Killing chrome...');
-		
+
 		this.chrome.kill();
 	}
 

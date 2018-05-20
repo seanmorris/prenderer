@@ -1,33 +1,44 @@
+#!/usr/bin/node
 'use strict';
 
 var _Browser = require('./Browser');
 
+var args = process.argv.slice(2);
+
 var browser = new _Browser.Browser(function (b) {
-	browser.goto('https://isotope.seanmorr.is/').then(function (x) {
-		var browserCode = function browserCode() {
+
+	var url = args[0];
+
+	browser.goto(url).then(function () {
+		var setPrerenderCookie = function setPrerenderCookie() {
+			document.cookie = 'prerenderer=prenderer';
+		};
+
+		b.Runtime.evaluate({
+			expression: '(' + setPrerenderCookie + ')()'
+		});
+
+		var listenForRenderEvent = function listenForRenderEvent() {
 			return new Promise(function (f, r) {
+				var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
+
 				document.addEventListener('renderComplete', function (event) {
-					return f('Render Complete!');
+					return f(docType + document.documentElement.outerHTML);
 				});
 
-				setTimeout(function () {
-					var event = new Event('renderComplete');
-					document.dispatchEvent(event);
-				}, 2500);
+				var timeout = setTimeout(function (args) {
+					f(docType + document.documentElement.outerHTML);
+				}, 5000);
 			});
 		};
 
 		b.Runtime.evaluate({
-			expression: '(' + browserCode + ')()',
+			expression: '(' + listenForRenderEvent + ')()',
 			awaitPromise: true
-		}).then(function (x) {
-			b.Runtime.evaluate({
-				expression: 'document.documentElement.outerHTML'
-			}).then(function (x) {
-				console.log(x.result.value);
+		}).then(function (result) {
+			console.log(result.result.value);
 
-				browser.kill();
-			});
+			browser.kill();
 		});
 	});
 });

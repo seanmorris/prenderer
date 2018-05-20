@@ -11,8 +11,6 @@ var _chromeLauncher = require('chrome-launcher');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// import { CDP    } from 'chrome-remote-interface';
-
 var CDP = require('chrome-remote-interface');
 
 var Browser = exports.Browser = function () {
@@ -23,12 +21,16 @@ var Browser = exports.Browser = function () {
 
 		console.error('Starting chrome...');
 
-		var defaults = ['--disable-gpu', '--no-sandbox', '--headless'];
+		var defaults = ['--no-sandbox', '--disable-gpu', '--headless', '--enable-automation'];
 
 		this.cdpClient = null;
 
 		this.chrome = (0, _chromeLauncher.launch)({
-			chromeFlags: defaults
+			chromeFlags: defaults,
+			'userDataDir': '/home/sean/prenderer/.chrome-user',
+			envVars: {
+				'HOME': '/home/sean/prenderer/.chrome-user'
+			}
 		}).then(function (chrome) {
 			_this.chrome = chrome;
 
@@ -52,15 +54,22 @@ var Browser = exports.Browser = function () {
 			return CDP({ port: this.port }).then(function (client) {
 				_this2.cdpClient = client;
 
+				var Network = client.Network,
+				    Page = client.Page;
+
+
+				Network.requestWillBeSent(function (params) {
+					console.error('Loading: ' + params.request.url);
+				});
+
+				Page.loadEventFired(function (params) {
+					// console.error(params);
+					// console.error('Client Closed...');
+					// client.close();
+				});
+
 				return _this2.connected(_this2.cdpClient, ready);
 			});
-
-			// CDP({port: this.port}, (client) => {
-			// 	
-			// 	this.connected(client, ready);	
-			// }).on('error', (err) => {
-			// 	console.error(err);
-			// });
 		}
 	}, {
 		key: 'connected',
@@ -68,16 +77,6 @@ var Browser = exports.Browser = function () {
 			var Network = client.Network,
 			    Page = client.Page;
 
-
-			Network.requestWillBeSent(function (params) {
-				console.error('Loading: ' + params.request.url);
-			});
-
-			Page.loadEventFired(function (params) {
-				// console.error(params);
-				// console.error('Client Closed...');
-				// client.close();
-			});
 
 			return Promise.all([Network.enable(), Page.enable()]).then(function () {
 				ready(client);
