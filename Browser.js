@@ -12,6 +12,8 @@ var _chromeLauncher = require('chrome-launcher');
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CDP = require('chrome-remote-interface');
+var os = require('os');
+var fs = require('fs');
 
 var Browser = exports.Browser = function () {
 	function Browser(ready) {
@@ -25,22 +27,26 @@ var Browser = exports.Browser = function () {
 
 		this.cdpClient = null;
 
-		var path = require('path').dirname(require.main.filename);
+		var path = os.tmpdir() + '/.chrome-user';
 
-		this.chrome = (0, _chromeLauncher.launch)({
-			chromeFlags: defaults,
-			'userDataDir': path + '/.chrome-user',
-			envVars: {
-				'HOME': path + '/.chrome-user'
-			}
-		}).then(function (chrome) {
-			_this.chrome = chrome;
+		console.log(path);
 
-			_this.port = chrome.port;
+		fs.mkdir(path, function () {
+			_this.chrome = (0, _chromeLauncher.launch)({
+				chromeFlags: defaults,
+				'userDataDir': path,
+				envVars: {
+					'HOME': path
+				}
+			}).then(function (chrome) {
+				_this.chrome = chrome;
 
-			console.error('Debug port: ' + _this.port);
+				_this.port = chrome.port;
 
-			_this.connect(ready);
+				console.error('Debug port: ' + _this.port);
+
+				_this.connect(ready);
+			});
 		});
 	}
 

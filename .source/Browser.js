@@ -1,5 +1,8 @@
 import { launch } from 'chrome-launcher';
-const CDP    = require('chrome-remote-interface');
+
+const CDP = require('chrome-remote-interface');
+const os  = require('os');
+const fs  = require('fs');
 
 export class Browser
 {
@@ -16,22 +19,24 @@ export class Browser
 
 		this.cdpClient = null;
 
-		const path = require('path').dirname(require.main.filename);
+		const path = os.tmpdir() + '/.chrome-user';
 
-		this.chrome = launch({
-			chromeFlags: defaults
-			, 'userDataDir': path + '/.chrome-user'
-			, envVars: {
-				'HOME' : path + '/.chrome-user'
-			}
-		}).then(chrome => {
-			this.chrome = chrome;
+		fs.mkdir(path, () => {
+			this.chrome = launch({
+				chromeFlags: defaults
+				, 'userDataDir': path
+				, envVars: {
+					'HOME' : path
+				}
+			}).then(chrome => {
+				this.chrome = chrome;
 
-			this.port = chrome.port;
+				this.port = chrome.port;
 
-			console.error('Debug port: ' + this.port);
+				console.error('Debug port: ' + this.port);
 
-			this.connect(ready);
+				this.connect(ready);
+			});
 		});
 	}
 
