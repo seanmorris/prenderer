@@ -29,8 +29,6 @@ var Browser = exports.Browser = function () {
 
 		var path = os.tmpdir() + '/.chrome-user';
 
-		console.log(path);
-
 		fs.mkdir(path, function () {
 			_this.chrome = (0, _chromeLauncher.launch)({
 				chromeFlags: defaults,
