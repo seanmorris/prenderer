@@ -38,12 +38,14 @@ var browser = new _Browser.Browser(function (b) {
 				});
 
 				if (timeout) {
-					var _timeout = setTimeout(function (args) {
+					setTimeout(function (args) {
 						f(docType + document.documentElement.outerHTML);
-					}, parseInt(_timeout));
+					}, parseInt(timeout));
 				}
 			});
 		};
+
+		console.error('(' + listenForRenderEvent + ')(' + settings.timeout + ')');
 
 		b.Runtime.evaluate({
 			expression: '(' + listenForRenderEvent + ')(' + settings.timeout + ')',

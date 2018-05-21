@@ -43,7 +43,7 @@ const browser = new Browser((b)=>{
 
 				if(timeout)
 				{
-					let timeout = setTimeout(
+					setTimeout(
 						(args) => { f(docType + document.documentElement.outerHTML) }
 						, parseInt(timeout)
 					);
@@ -51,6 +51,8 @@ const browser = new Browser((b)=>{
 
 			});
 		};
+
+		console.error(`(${listenForRenderEvent})(${settings.timeout})`);
 
 		b.Runtime.evaluate({
 			expression: `(${listenForRenderEvent})(${settings.timeout})`,
