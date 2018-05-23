@@ -1,6 +1,6 @@
 {
   "name": "prenderer",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Prerender your JS pages in Chrome.",
   "bin": {
     "prenderer": "./index.js"

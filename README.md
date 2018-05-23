@@ -20,6 +20,9 @@ It has only been tested on Debian Linux.
 
 Usage:
 
+Supply a url and a timeout in milliseconds.
+
+
 ```sh
 $ prenderer http://google.com --timeout=200
 ```
@@ -30,8 +33,6 @@ Remove the noise:
 ```sh
 $ prenderer http://google.com --timeout=200 2>/dev/null
 ```
-
-Supply a url and a timeout in milliseconds.
 
 You also can omit the timeout, and throw a "renderComplete" event in your page's JS:
 
