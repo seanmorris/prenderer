@@ -20,6 +20,12 @@ It has only been tested on Debian Linux.
 
 Usage:
 
+Install:
+
+```sh
+$ npm i -g prenderer
+```
+
 Supply a url and a timeout in milliseconds.
 
 
