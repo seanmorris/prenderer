@@ -1,16 +1,19 @@
 {
   "name": "prenderer",
-  "version": "1.0.5",
-  "description": "",
+  "version": "1.0.7",
+  "description": "Prerender your JS pages in Chrome.",
   "bin": {
     "prenderer": "./index.js"
   },
   "main": "index.js",
-  "author": "",
+  "author": "Sean Morris",
   "license": "Apache 2.0",
   "scripts": {
     "build": "babel .source --presets babel-preset-es2015 --out-dir ."
   },
+  "keywords": [
+    "prerenderer", "event", "chrome", "spa", "serverside"
+  ],
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1"
@@ -18,5 +21,10 @@
   "dependencies": {
     "chrome-launcher": "^0.10.2",
     "chrome-remote-interface": "^0.25.6"
+  },
+  "repository" :
+  {
+    "type" : "git",
+    "url" : "https://github.com/seanmorris/prenderer.git"
   }
 }
