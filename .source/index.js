@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const browser = new Browser((b)=>{
 
 	const url      = args[0];
-	const settings = {};
+	const settings = {timeout: 5000};
 
 	args.slice(1).map((arg)=>{
 		let groups = /^--(\w+)=?(.+)?/.exec(arg);

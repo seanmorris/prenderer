@@ -8,7 +8,7 @@ var args = process.argv.slice(2);
 var browser = new _Browser.Browser(function (b) {
 
 	var url = args[0];
-	var settings = {};
+	var settings = { timeout: 5000 };
 
 	args.slice(1).map(function (arg) {
 		var groups = /^--(\w+)=?(.+)?/.exec(arg);
