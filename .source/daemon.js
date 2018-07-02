@@ -20,6 +20,7 @@ const browser = new Browser(()=>{
 		const settings = {timeout: req.query.timeout || 5000};
 
 		browser.prerender(req.query.url, settings).then((value)=>{
+			console.error('Sending...');
 			res.set('Content-Type', 'text/plain');
 			res.send(value);
 		});

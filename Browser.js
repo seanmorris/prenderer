@@ -16,7 +16,7 @@ var os = require('os');
 var fs = require('fs');
 
 var Browser = exports.Browser = function () {
-	function Browser(ready) {
+	function Browser(init) {
 		var _this = this;
 
 		_classCallCheck(this, Browser);
@@ -41,7 +41,7 @@ var Browser = exports.Browser = function () {
 
 				console.error('Debug port: ' + _this.port);
 
-				ready();
+				init();
 			});
 		});
 	}
@@ -113,6 +113,10 @@ var Browser = exports.Browser = function () {
 						}).then(function (result) {
 							client.close();
 							accept(result.result.value);
+						}).catch(function (err) {
+							console.error('Client Closed due to error...');
+							console.error(err);
+							client.close();
 						});
 					});
 				});
@@ -124,20 +128,6 @@ var Browser = exports.Browser = function () {
 			console.error('Killing chrome...');
 
 			this.chrome.kill();
-		}
-	}, {
-		key: 'goto',
-		value: function goto(url) {
-			var _this3 = this;
-
-			return new Promise(function (accept, reject) {
-				_this3.connect(function (client) {
-					console.error('Goto ' + url);
-					client.Page.navigate({ url: url }).then(function () {
-						accept(client);
-					});
-				});
-			});
 		}
 	}]);
 

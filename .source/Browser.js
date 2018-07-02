@@ -6,7 +6,7 @@ const fs  = require('fs');
 
 export class Browser
 {
-	constructor(ready)
+	constructor(init)
 	{
 		console.error('Starting chrome...');
 
@@ -33,7 +33,7 @@ export class Browser
 
 				console.error('Debug port: ' + this.port);
 
-				ready();
+				init();
 			});
 		});
 	}
@@ -110,6 +110,10 @@ export class Browser
 					}).then((result)=>{
 						client.close();
 						accept(result.result.value);
+					}).catch((err) => {
+						console.error('Client Closed due to error...');
+						console.error(err);
+						client.close();
 					});
 				});			
 			});
@@ -121,17 +125,5 @@ export class Browser
 		console.error('Killing chrome...');
 
 		this.chrome.kill();
-	}
-
-	goto(url)
-	{
-		return new Promise((accept, reject) =>{
-			this.connect((client)=>{
-				console.error('Goto ' + url)
-				client.Page.navigate({url}).then(()=>{
-					accept(client);
-				});
-			});
-		});
 	}
 }
