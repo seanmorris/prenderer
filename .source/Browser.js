@@ -17,8 +17,6 @@ export class Browser
 			, '--enable-automation'
 		];
 
-		this.cdpClient = null;
-
 		const path = os.tmpdir() + '/.chrome-user';
 
 		fs.mkdir(path, () => {
@@ -35,21 +33,14 @@ export class Browser
 
 				console.error('Debug port: ' + this.port);
 
-				this.connect(ready);
+				ready();
 			});
 		});
 	}
 
 	connect(ready)
 	{
-		if(this.cdpClient)
-		{
-			return this.connected(this.cdpClient, ready);
-		}
-
 		return CDP({port: this.port}).then(client=>{
-			this.cdpClient = client;
-
 			const {Network, Page} = client;
 
 			Network.requestWillBeSent((params) => {
@@ -57,30 +48,73 @@ export class Browser
 			});
 
 			Page.loadEventFired((params) => {
-				// console.error(params);
-				// console.error('Client Closed...');
-				// client.close();
+				console.error('Loading complete.');
 			});
 
-			return this.connected(this.cdpClient, ready);
+			return Promise.all([
+				Network.enable(),
+				Page.enable()
+			]).then(() => {
+				ready(client);
+			}).catch((err) => {
+				console.error('Client Closed due to error...');
+				console.error(err);
+				client.close();
+			});
 		});
 	}
 
-	connected(client, ready)
+	prerender(url, settings)
 	{
-		const {Network, Page} = client;
+		return new Promise((accept, reject) => {
+			this.connect((client)=>{
+				console.error('Goto ' + url);
 
-		return Promise.all([
-			Network.enable(),
-			Page.enable()
-		]).then(() => {
-			ready(client);
-		}).catch((err) => {
-			console.error('Client Closed due to error...');
-			console.error(err);
-			client.close();
+				client.Page.navigate({url}).then((c)=>{
+					const setPrerenderCookie = () => {
+						document.cookie = `prerenderer=prenderer`;
+					};
+
+					client.Runtime.evaluate({
+						expression: `(${setPrerenderCookie})()`,
+					});
+
+					const listenForRenderEvent = (timeout) => {
+						return new Promise((f,r)=>{
+							let docType = document.doctype
+								? new XMLSerializer().serializeToString(document.doctype)
+									+ "\n"
+								: '';
+							
+							document.addEventListener(
+								'renderComplete'
+								, (event) => f(docType + document.documentElement.outerHTML)
+							);
+
+							if(timeout)
+							{
+								setTimeout(
+									(args) => { f(docType + document.documentElement.outerHTML) }
+									, parseInt(timeout)
+								);
+							}
+
+						});
+					};
+
+					// console.error(`(${listenForRenderEvent})(${settings.timeout})`);
+
+					client.Runtime.evaluate({
+						expression: `(${listenForRenderEvent})(${settings.timeout})`,
+						awaitPromise: true
+					}).then((result)=>{
+						client.close();
+						accept(result.result.value);
+					});
+				});			
+			});
 		});
-	}
+	};
 
 	kill()
 	{
@@ -97,7 +131,7 @@ export class Browser
 				client.Page.navigate({url}).then(()=>{
 					accept(client);
 				});
-			})
+			});
 		});
 	}
 }

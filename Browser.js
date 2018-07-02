@@ -25,8 +25,6 @@ var Browser = exports.Browser = function () {
 
 		var defaults = ['--no-sandbox', '--disable-gpu', '--headless', '--enable-automation'];
 
-		this.cdpClient = null;
-
 		var path = os.tmpdir() + '/.chrome-user';
 
 		fs.mkdir(path, function () {
@@ -43,7 +41,7 @@ var Browser = exports.Browser = function () {
 
 				console.error('Debug port: ' + _this.port);
 
-				_this.connect(ready);
+				ready();
 			});
 		});
 	}
@@ -51,15 +49,7 @@ var Browser = exports.Browser = function () {
 	_createClass(Browser, [{
 		key: 'connect',
 		value: function connect(ready) {
-			var _this2 = this;
-
-			if (this.cdpClient) {
-				return this.connected(this.cdpClient, ready);
-			}
-
 			return CDP({ port: this.port }).then(function (client) {
-				_this2.cdpClient = client;
-
 				var Network = client.Network,
 				    Page = client.Page;
 
@@ -69,27 +59,63 @@ var Browser = exports.Browser = function () {
 				});
 
 				Page.loadEventFired(function (params) {
-					// console.error(params);
-					// console.error('Client Closed...');
-					// client.close();
+					console.error('Loading complete.');
 				});
 
-				return _this2.connected(_this2.cdpClient, ready);
+				return Promise.all([Network.enable(), Page.enable()]).then(function () {
+					ready(client);
+				}).catch(function (err) {
+					console.error('Client Closed due to error...');
+					console.error(err);
+					client.close();
+				});
 			});
 		}
 	}, {
-		key: 'connected',
-		value: function connected(client, ready) {
-			var Network = client.Network,
-			    Page = client.Page;
+		key: 'prerender',
+		value: function prerender(url, settings) {
+			var _this2 = this;
 
+			return new Promise(function (accept, reject) {
+				_this2.connect(function (client) {
+					console.error('Goto ' + url);
 
-			return Promise.all([Network.enable(), Page.enable()]).then(function () {
-				ready(client);
-			}).catch(function (err) {
-				console.error('Client Closed due to error...');
-				console.error(err);
-				client.close();
+					client.Page.navigate({ url: url }).then(function (c) {
+						var setPrerenderCookie = function setPrerenderCookie() {
+							document.cookie = 'prerenderer=prenderer';
+						};
+
+						client.Runtime.evaluate({
+							expression: '(' + setPrerenderCookie + ')()'
+						});
+
+						var listenForRenderEvent = function listenForRenderEvent(timeout) {
+							return new Promise(function (f, r) {
+								var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
+
+								document.addEventListener('renderComplete', function (event) {
+									return f(docType + document.documentElement.outerHTML);
+								});
+
+								if (timeout) {
+									setTimeout(function (args) {
+										f(docType + document.documentElement.outerHTML);
+									}, parseInt(timeout));
+								}
+							});
+						};
+
+						// console.error(`(${listenForRenderEvent})(${settings.timeout})`);
+
+						client.Runtime.evaluate({
+							expression: '(' + listenForRenderEvent + ')(' + settings.timeout + ')',
+							awaitPromise: true
+						}).then(function (result) {
+							client.close();
+							accept(result.result.value);
+						});
+					});
+				});
 			});
 		}
 	}, {

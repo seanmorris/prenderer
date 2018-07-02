@@ -12,7 +12,11 @@
     "build": "babel .source --presets babel-preset-es2015 --out-dir ."
   },
   "keywords": [
-    "prerenderer", "event", "chrome", "spa", "serverside"
+    "prerenderer",
+    "event",
+    "chrome",
+    "spa",
+    "serverside"
   ],
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -20,11 +24,11 @@
   },
   "dependencies": {
     "chrome-launcher": "^0.10.2",
-    "chrome-remote-interface": "^0.25.6"
+    "chrome-remote-interface": "^0.25.6",
+    "express": "^4.16.3"
   },
-  "repository" :
-  {
-    "type" : "git",
-    "url" : "https://github.com/seanmorris/prenderer.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seanmorris/prenderer.git"
   }
 }

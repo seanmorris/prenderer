@@ -5,7 +5,7 @@ var _Browser = require('./Browser');
 
 var args = process.argv.slice(2);
 
-var browser = new _Browser.Browser(function (b) {
+var browser = new _Browser.Browser(function () {
 
 	var url = args[0];
 	var settings = { timeout: 5000 };
@@ -18,42 +18,8 @@ var browser = new _Browser.Browser(function (b) {
 		}
 	});
 
-	console.error(settings);
-
-	browser.goto(url).then(function () {
-		var setPrerenderCookie = function setPrerenderCookie() {
-			document.cookie = 'prerenderer=prenderer';
-		};
-
-		b.Runtime.evaluate({
-			expression: '(' + setPrerenderCookie + ')()'
-		});
-
-		var listenForRenderEvent = function listenForRenderEvent(timeout) {
-			return new Promise(function (f, r) {
-				var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
-
-				document.addEventListener('renderComplete', function (event) {
-					return f(docType + document.documentElement.outerHTML);
-				});
-
-				if (timeout) {
-					setTimeout(function (args) {
-						f(docType + document.documentElement.outerHTML);
-					}, parseInt(timeout));
-				}
-			});
-		};
-
-		console.error('(' + listenForRenderEvent + ')(' + settings.timeout + ')');
-
-		b.Runtime.evaluate({
-			expression: '(' + listenForRenderEvent + ')(' + settings.timeout + ')',
-			awaitPromise: true
-		}).then(function (result) {
-			console.log(result.result.value);
-
-			browser.kill();
-		});
+	browser.prerender(url, settings).then(function (value) {
+		console.log(value);
+		browser.kill();
 	});
 });
