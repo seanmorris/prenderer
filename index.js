@@ -7,7 +7,6 @@ var args = process.argv.slice(2);
 
 var browser = new _Browser.Browser(function () {
 
-	var url = args[0];
 	var settings = { timeout: 5000 };
 
 	args.slice(1).map(function (arg) {
@@ -17,6 +16,8 @@ var browser = new _Browser.Browser(function () {
 			settings[groups[1]] = groups[2] || true;
 		}
 	});
+
+	var url = args[0];
 
 	browser.prerender(url, settings).then(function (value) {
 		console.log(value);

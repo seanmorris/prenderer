@@ -23,11 +23,12 @@ var Browser = exports.Browser = function () {
 
 		console.error('Starting chrome...');
 
-		var defaults = ['--no-sandbox', '--disable-gpu', '--headless', '--enable-automation'];
+		var defaults = ['--no-sandbox', '--disable-gpu', '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'];
 
 		var path = os.tmpdir() + '/.chrome-user';
 
 		fs.mkdir(path, function () {
+			console.error('Userdir exists...' + "\n");
 			_this.chrome = (0, _chromeLauncher.launch)({
 				chromeFlags: defaults,
 				'userDataDir': path,
@@ -35,6 +36,7 @@ var Browser = exports.Browser = function () {
 					'HOME': path
 				}
 			}).then(function (chrome) {
+				console.error('Started chrome, connecting...' + "\n");
 				_this.chrome = chrome;
 
 				_this.port = chrome.port;
@@ -42,6 +44,8 @@ var Browser = exports.Browser = function () {
 				console.error('Debug port: ' + _this.port);
 
 				init();
+			}).catch(function (error) {
+				console.error(error);
 			});
 		});
 	}
@@ -81,25 +85,28 @@ var Browser = exports.Browser = function () {
 					console.error('Goto ' + url);
 
 					client.Page.navigate({ url: url }).then(function (c) {
-						var setPrerenderCookie = function setPrerenderCookie() {
-							document.cookie = 'prerenderer=prenderer';
+						var setPrerenderFlag = function setPrerenderFlag() {
+							window.prerenderer = 'prenderer';
 						};
 
 						client.Runtime.evaluate({
-							expression: '(' + setPrerenderCookie + ')()'
+							expression: '(' + setPrerenderFlag + ')()'
 						});
 
 						var listenForRenderEvent = function listenForRenderEvent(timeout) {
 							return new Promise(function (f, r) {
-								var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
-
 								document.addEventListener('renderComplete', function (event) {
-									return f(docType + document.documentElement.outerHTML);
+									setTimeout(function (args) {
+										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
+										f(docType + '<!-- Event -->' + document.documentElement.outerHTML);
+									}, 100);
 								});
 
 								if (timeout) {
 									setTimeout(function (args) {
-										f(docType + document.documentElement.outerHTML);
+										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
+
+										f(docType + '<!-- Timeout -->' + document.documentElement.outerHTML);
 									}, parseInt(timeout));
 								}
 							});

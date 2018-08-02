@@ -15,11 +15,13 @@ export class Browser
 			, '--disable-gpu'
 			, '--headless'
 			, '--enable-automation'
+			, '--blink-settings=imagesEnabled=false'
 		];
 
 		const path = os.tmpdir() + '/.chrome-user';
 
 		fs.mkdir(path, () => {
+			console.error('Userdir exists...' + "\n");
 			this.chrome = launch({
 				chromeFlags: defaults
 				, 'userDataDir': path
@@ -27,6 +29,7 @@ export class Browser
 					'HOME' : path
 				}
 			}).then(chrome => {
+				console.error('Started chrome, connecting...' + "\n");
 				this.chrome = chrome;
 
 				this.port = chrome.port;
@@ -34,6 +37,8 @@ export class Browser
 				console.error('Debug port: ' + this.port);
 
 				init();
+			}).catch(error => {
+				console.error(error);
 			});
 		});
 	}
@@ -71,30 +76,51 @@ export class Browser
 				console.error('Goto ' + url);
 
 				client.Page.navigate({url}).then((c)=>{
-					const setPrerenderCookie = () => {
-						document.cookie = `prerenderer=prenderer`;
+					const setPrerenderFlag = () => {
+						window.prerenderer = `prenderer`;
 					};
 
 					client.Runtime.evaluate({
-						expression: `(${setPrerenderCookie})()`,
+						expression: `(${setPrerenderFlag})()`,
 					});
 
 					const listenForRenderEvent = (timeout) => {
 						return new Promise((f,r)=>{
-							let docType = document.doctype
-								? new XMLSerializer().serializeToString(document.doctype)
-									+ "\n"
-								: '';
-							
 							document.addEventListener(
 								'renderComplete'
-								, (event) => f(docType + document.documentElement.outerHTML)
+								, (event) => {
+									setTimeout(
+										(args) => {
+											let docType = document.doctype
+												? new XMLSerializer().serializeToString(document.doctype)
+													+ "\n"
+												: '';
+											f(
+												docType
+													+ '<!-- Event -->'
+													+ document.documentElement.outerHTML
+											);
+										}
+										, 100
+									);
+								}
 							);
 
 							if(timeout)
 							{
 								setTimeout(
-									(args) => { f(docType + document.documentElement.outerHTML) }
+									(args) => {
+										let docType = document.doctype
+											? new XMLSerializer().serializeToString(document.doctype)
+												+ "\n"
+											: '';
+										
+										f(
+											docType
+												+ '<!-- Timeout -->'
+												+ document.documentElement.outerHTML
+										);
+									}
 									, parseInt(timeout)
 								);
 							}
