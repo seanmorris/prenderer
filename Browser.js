@@ -85,6 +85,10 @@ var Browser = exports.Browser = function () {
 					console.error('Goto ' + url);
 
 					client.Page.navigate({ url: url }).then(function (c) {
+						var clearCookies = function clearCookies() {
+							0;
+						};
+
 						var setPrerenderFlag = function setPrerenderFlag() {
 							window.prerenderer = 'prenderer';
 						};
@@ -98,7 +102,7 @@ var Browser = exports.Browser = function () {
 								document.addEventListener('renderComplete', function (event) {
 									setTimeout(function (args) {
 										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
-										f(docType + '<!-- Event -->' + document.documentElement.outerHTML);
+										f(docType + document.documentElement.outerHTML);
 									}, 100);
 								});
 
@@ -106,7 +110,7 @@ var Browser = exports.Browser = function () {
 									setTimeout(function (args) {
 										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
 
-										f(docType + '<!-- Timeout -->' + document.documentElement.outerHTML);
+										f(docType + document.documentElement.outerHTML);
 									}, parseInt(timeout));
 								}
 							});

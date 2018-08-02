@@ -76,6 +76,10 @@ export class Browser
 				console.error('Goto ' + url);
 
 				client.Page.navigate({url}).then((c)=>{
+					const clearCookies = () => {
+						0;
+					};
+
 					const setPrerenderFlag = () => {
 						window.prerenderer = `prenderer`;
 					};
@@ -97,7 +101,6 @@ export class Browser
 												: '';
 											f(
 												docType
-													+ '<!-- Event -->'
 													+ document.documentElement.outerHTML
 											);
 										}
@@ -117,7 +120,6 @@ export class Browser
 										
 										f(
 											docType
-												+ '<!-- Timeout -->'
 												+ document.documentElement.outerHTML
 										);
 									}
