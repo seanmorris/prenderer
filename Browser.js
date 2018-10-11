@@ -100,10 +100,8 @@ var Browser = exports.Browser = function () {
 						var listenForRenderEvent = function listenForRenderEvent(timeout) {
 							return new Promise(function (f, r) {
 								document.addEventListener('renderComplete', function (event) {
-									setTimeout(function (args) {
-										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
-										f(docType + document.documentElement.outerHTML);
-									}, 100);
+									var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
+									f(docType + document.documentElement.outerHTML);
 								});
 
 								if (timeout) {

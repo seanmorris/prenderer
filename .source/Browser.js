@@ -93,18 +93,13 @@ export class Browser
 							document.addEventListener(
 								'renderComplete'
 								, (event) => {
-									setTimeout(
-										(args) => {
-											let docType = document.doctype
-												? new XMLSerializer().serializeToString(document.doctype)
-													+ "\n"
-												: '';
-											f(
-												docType
-													+ document.documentElement.outerHTML
-											);
-										}
-										, 100
+									let docType = document.doctype
+										? new XMLSerializer().serializeToString(document.doctype)
+											+ "\n"
+										: '';
+									f(
+										docType
+											+ document.documentElement.outerHTML
 									);
 								}
 							);
