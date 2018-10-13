@@ -21,14 +21,14 @@ var Browser = exports.Browser = function () {
 
 		_classCallCheck(this, Browser);
 
-		console.error('Starting chrome...');
+		// console.error('Starting chrome...');
 
 		var defaults = ['--no-sandbox', '--disable-gpu', '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'];
 
 		var path = os.tmpdir() + '/.chrome-user';
 
 		fs.mkdir(path, function () {
-			console.error('Userdir exists...' + "\n");
+			// console.error('Userdir exists...' + "\n");
 			_this.chrome = (0, _chromeLauncher.launch)({
 				chromeFlags: defaults,
 				'userDataDir': path,
@@ -36,12 +36,12 @@ var Browser = exports.Browser = function () {
 					'HOME': path
 				}
 			}).then(function (chrome) {
-				console.error('Started chrome, connecting...' + "\n");
+				// console.error('Started chrome, connecting...' + "\n");
 				_this.chrome = chrome;
 
 				_this.port = chrome.port;
 
-				console.error('Debug port: ' + _this.port);
+				// console.error('Debug port: ' + this.port);
 
 				init();
 			}).catch(function (error) {

@@ -8,7 +8,7 @@ export class Browser
 {
 	constructor(init)
 	{
-		console.error('Starting chrome...');
+		// console.error('Starting chrome...');
 
 		const defaults = [
 			'--no-sandbox'
@@ -21,7 +21,7 @@ export class Browser
 		const path = os.tmpdir() + '/.chrome-user';
 
 		fs.mkdir(path, () => {
-			console.error('Userdir exists...' + "\n");
+			// console.error('Userdir exists...' + "\n");
 			this.chrome = launch({
 				chromeFlags: defaults
 				, 'userDataDir': path
@@ -29,12 +29,12 @@ export class Browser
 					'HOME' : path
 				}
 			}).then(chrome => {
-				console.error('Started chrome, connecting...' + "\n");
+				// console.error('Started chrome, connecting...' + "\n");
 				this.chrome = chrome;
 
 				this.port = chrome.port;
 
-				console.error('Debug port: ' + this.port);
+				// console.error('Debug port: ' + this.port);
 
 				init();
 			}).catch(error => {
@@ -98,6 +98,20 @@ export class Browser
 											+ "\n"
 										: '';
 									f(
+										docType
+											+ document.documentElement.outerHTML
+									);
+								}
+							);
+
+							document.addEventListener(
+								'renderFail'
+								, (event) => {
+									let docType = document.doctype
+										? new XMLSerializer().serializeToString(document.doctype)
+											+ "\n"
+										: '';
+									r(
 										docType
 											+ document.documentElement.outerHTML
 									);

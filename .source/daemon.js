@@ -3,7 +3,7 @@
 import { Browser } from './Browser';
 
 const args    = process.argv.slice(2);
-const port    = args[0] || 3000;
+const port    = args[0] || 3003;
 const express = require('express');
 const daemon  = express();
 const browser = new Browser(()=>{

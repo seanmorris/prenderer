@@ -4,7 +4,7 @@
 var _Browser = require('./Browser');
 
 var args = process.argv.slice(2);
-var port = args[0] || 3000;
+var port = args[0] || 3003;
 var express = require('express');
 var daemon = express();
 var browser = new _Browser.Browser(function () {
