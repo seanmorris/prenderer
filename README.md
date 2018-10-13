@@ -8,13 +8,15 @@ Prerender your JS pages in Chrome.
 
 [Getting Started](#getting-started)
 
+[Daemon](#daemon)
+
 [Installing Chrome](#installing-chrome)
 
 ## Getting Started
 
 This module allows for *server side* rendering in chrome, meaning you can run it as a system user, say under apache or nginx.
 
-It runs a headless instance of chrome to prerender the pages. You can either wait on a timeout for rendering to complete, or throw an event on the page to signal that prenderer should snapshot the document and move on.
+It runs a headless instance of chrome to prerender the pages. You can either wait on a timeout for rendering to complete, or throw an event on the page to signal that Prenderer should snapshot the document and move on.
 
 It has only been tested on Debian Linux.
 
@@ -53,6 +55,32 @@ $ prenderer http://yourwebsite.com
 
 During prerendering, the "prerenderer" cookie will be set. You can use this to detect prerendering in your page js.
 
+## Daemon
+
+Use the following command to run Prenderer in daemon mode. If no port number is supplied, 3003 will be used.
+
+```sh
+$ prenderer --daemon 3003
+```
+
+Use URLS like the following to prerender over the network:
+
+```
+http://localhost:3003/?url=http://yahoo.com
+```
+
+## Streaming
+
+Run Prenderer in streaming mode with the following command:
+
+```
+$ prenderer --streaming
+```
+
+In this mode, Prenderer will load URLs from STDIN, separated by newlines.
+
+Results will also be one line each, as newlines are escaped.
+
 ## Installing Chrome
 
 If you're in a pure CLI environment, like in SSH or Docker, you can't exactly go to google.com/chrome and click download (actually you can with lynx, but I digress).
@@ -81,7 +109,6 @@ $ apt install google-chrome-stable
 ```sh
 $ npm i -g prenderer
 ```
-
 
 Thats it, now prenderer is ready to use.
 
