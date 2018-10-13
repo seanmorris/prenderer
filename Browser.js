@@ -104,6 +104,11 @@ var Browser = exports.Browser = function () {
 									f(docType + document.documentElement.outerHTML);
 								});
 
+								document.addEventListener('renderFail', function (event) {
+									var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
+									r(docType + document.documentElement.outerHTML);
+								});
+
 								if (timeout) {
 									setTimeout(function (args) {
 										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
