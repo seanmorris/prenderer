@@ -8,15 +8,13 @@ export class Browser
 {
 	constructor(init)
 	{
-		// console.error('Starting chrome...');
-
 		const defaults = [
 			'--no-sandbox'
-			, '--disable-gpu'
-			, '--headless'
+			, process.env.NOT_HEADLESS ? null : '--disable-gpu'
+			, process.env.NOT_HEADLESS ? null : '--headless'
 			, '--enable-automation'
 			, '--blink-settings=imagesEnabled=false'
-		];
+		].filter(x=>x);
 
 		const path = os.tmpdir() + '/.chrome-user';
 
@@ -25,9 +23,7 @@ export class Browser
 			this.chrome = launch({
 				chromeFlags: defaults
 				, 'userDataDir': path
-				, envVars: {
-					'HOME' : path
-				}
+				, envVars: {'HOME' : path, DISPLAY: ':0'}
 			}).then(chrome => {
 				// console.error('Started chrome, connecting...' + "\n");
 				this.chrome = chrome;
@@ -97,10 +93,10 @@ export class Browser
 										? new XMLSerializer().serializeToString(document.doctype)
 											+ "\n"
 										: '';
-									f(
-										docType
-											+ document.documentElement.outerHTML
-									);
+
+									const result = docType + document.documentElement.outerHTML;
+
+									f(result);
 								}
 							);
 
@@ -111,10 +107,10 @@ export class Browser
 										? new XMLSerializer().serializeToString(document.doctype)
 											+ "\n"
 										: '';
-									r(
-										docType
-											+ document.documentElement.outerHTML
-									);
+
+									const result = docType + document.documentElement.outerHTML;
+
+									r(result);
 								}
 							);
 
@@ -126,11 +122,10 @@ export class Browser
 											? new XMLSerializer().serializeToString(document.doctype)
 												+ "\n"
 											: '';
-										
-										f(
-											docType
-												+ document.documentElement.outerHTML
-										);
+
+										const result = docType + document.documentElement.outerHTML;
+
+										f(result);
 									}
 									, parseInt(timeout)
 								);
@@ -145,6 +140,7 @@ export class Browser
 						expression: `(${listenForRenderEvent})(${settings.timeout})`,
 						awaitPromise: true
 					}).then((result)=>{
+						process.env.DONT_UNLOAD && client.Page.navigate({url:'about:blank'});
 						client.close();
 						accept(result.result.value);
 					}).catch((err) => {
@@ -152,7 +148,7 @@ export class Browser
 						console.error(err);
 						client.close();
 					});
-				});			
+				});
 			});
 		});
 	};

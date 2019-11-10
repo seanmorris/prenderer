@@ -21,9 +21,9 @@ var Browser = exports.Browser = function () {
 
 		_classCallCheck(this, Browser);
 
-		// console.error('Starting chrome...');
-
-		var defaults = ['--no-sandbox', '--disable-gpu', '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'];
+		var defaults = ['--no-sandbox', process.env.NOT_HEADLESS ? null : '--disable-gpu', process.env.NOT_HEADLESS ? null : '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'].filter(function (x) {
+			return x;
+		});
 
 		var path = os.tmpdir() + '/.chrome-user';
 
@@ -32,9 +32,7 @@ var Browser = exports.Browser = function () {
 			_this.chrome = (0, _chromeLauncher.launch)({
 				chromeFlags: defaults,
 				'userDataDir': path,
-				envVars: {
-					'HOME': path
-				}
+				envVars: { 'HOME': path, DISPLAY: ':0' }
 			}).then(function (chrome) {
 				// console.error('Started chrome, connecting...' + "\n");
 				_this.chrome = chrome;
@@ -101,19 +99,27 @@ var Browser = exports.Browser = function () {
 							return new Promise(function (f, r) {
 								document.addEventListener('renderComplete', function (event) {
 									var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
-									f(docType + document.documentElement.outerHTML);
+
+									var result = docType + document.documentElement.outerHTML;
+
+									f(result);
 								});
 
 								document.addEventListener('renderFail', function (event) {
 									var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
-									r(docType + document.documentElement.outerHTML);
+
+									var result = docType + document.documentElement.outerHTML;
+
+									r(result);
 								});
 
 								if (timeout) {
 									setTimeout(function (args) {
 										var docType = document.doctype ? new XMLSerializer().serializeToString(document.doctype) + "\n" : '';
 
-										f(docType + document.documentElement.outerHTML);
+										var result = docType + document.documentElement.outerHTML;
+
+										f(result);
 									}, parseInt(timeout));
 								}
 							});
@@ -125,6 +131,7 @@ var Browser = exports.Browser = function () {
 							expression: '(' + listenForRenderEvent + ')(' + settings.timeout + ')',
 							awaitPromise: true
 						}).then(function (result) {
+							process.env.DONT_UNLOAD && client.Page.navigate({ url: 'about:blank' });
 							client.close();
 							accept(result.result.value);
 						}).catch(function (err) {
