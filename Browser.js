@@ -15,8 +15,10 @@ var CDP = require('chrome-remote-interface');
 var os = require('os');
 var fs = require('fs');
 
-var NOT_HEADLESS = parseInt(process.env.NOT_HEADLESS);
-var DONT_UNLOAD = parseInt(process.env.DONT_UNLOAD);
+var NOT_HEADLESS = !!parseInt(process.env.NOT_HEADLESS);
+var DONT_UNLOAD = !!parseInt(process.env.DONT_UNLOAD);
+var USE_GPU = !!parseInt(process.env.USE_GPU);
+var DISPLAY = process.env.DISPLAY;
 
 var Browser = exports.Browser = function () {
 	function Browser(init) {
@@ -24,9 +26,12 @@ var Browser = exports.Browser = function () {
 
 		_classCallCheck(this, Browser);
 
-		var defaults = ['--no-sandbox', NOT_HEADLESS ? null : '--disable-gpu', NOT_HEADLESS ? null : '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'].filter(function (x) {
+		var defaults = ['--no-sandbox', USE_GPU ? null : '--disable-gpu', NOT_HEADLESS ? null : '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'].filter(function (x) {
 			return x;
 		});
+
+		console.log(defaults);
+		process.exit();
 
 		var path = os.tmpdir() + '/.chrome-user';
 
@@ -35,7 +40,7 @@ var Browser = exports.Browser = function () {
 			_this.chrome = (0, _chromeLauncher.launch)({
 				chromeFlags: defaults,
 				'userDataDir': path,
-				envVars: { 'HOME': path, DISPLAY: ':0' }
+				envVars: { 'HOME': path, DISPLAY: DISPLAY || ':0' }
 			}).then(function (chrome) {
 				// console.error('Started chrome, connecting...' + "\n");
 				_this.chrome = chrome;

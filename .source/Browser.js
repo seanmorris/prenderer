@@ -4,8 +4,10 @@ const CDP = require('chrome-remote-interface');
 const os  = require('os');
 const fs  = require('fs');
 
-const NOT_HEADLESS = parseInt(process.env.NOT_HEADLESS);
-const DONT_UNLOAD  = parseInt(process.env.DONT_UNLOAD);
+const NOT_HEADLESS = !!parseInt(process.env.NOT_HEADLESS);
+const DONT_UNLOAD  = !!parseInt(process.env.DONT_UNLOAD);
+const USE_GPU      = !!parseInt(process.env.USE_GPU);
+const DISPLAY      = process.env.DISPLAY;
 
 export class Browser
 {
@@ -13,7 +15,7 @@ export class Browser
 	{
 		const defaults = [
 			'--no-sandbox'
-			, NOT_HEADLESS ? null : '--disable-gpu'
+			, USE_GPU      ? null : '--disable-gpu'
 			, NOT_HEADLESS ? null : '--headless'
 			, '--enable-automation'
 			, '--blink-settings=imagesEnabled=false'
@@ -26,7 +28,7 @@ export class Browser
 			this.chrome = launch({
 				chromeFlags: defaults
 				, 'userDataDir': path
-				, envVars: {'HOME' : path, DISPLAY: ':0'}
+				, envVars: {'HOME' : path, DISPLAY: DISPLAY || ':0'}
 			}).then(chrome => {
 				// console.error('Started chrome, connecting...' + "\n");
 				this.chrome = chrome;
