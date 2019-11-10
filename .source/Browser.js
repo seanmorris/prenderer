@@ -4,14 +4,17 @@ const CDP = require('chrome-remote-interface');
 const os  = require('os');
 const fs  = require('fs');
 
+const NOT_HEADLESS = parseInt(process.env.NOT_HEADLESS);
+const DONT_UNLOAD  = parseInt(process.env.DONT_UNLOAD);
+
 export class Browser
 {
 	constructor(init)
 	{
 		const defaults = [
 			'--no-sandbox'
-			, process.env.NOT_HEADLESS ? null : '--disable-gpu'
-			, process.env.NOT_HEADLESS ? null : '--headless'
+			, NOT_HEADLESS ? null : '--disable-gpu'
+			, NOT_HEADLESS ? null : '--headless'
 			, '--enable-automation'
 			, '--blink-settings=imagesEnabled=false'
 		].filter(x=>x);
@@ -140,7 +143,7 @@ export class Browser
 						expression: `(${listenForRenderEvent})(${settings.timeout})`,
 						awaitPromise: true
 					}).then((result)=>{
-						process.env.DONT_UNLOAD && client.Page.navigate({url:'about:blank'});
+						DONT_UNLOAD || client.Page.navigate({url:'about:blank'});
 						client.close();
 						accept(result.result.value);
 					}).catch((err) => {

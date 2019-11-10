@@ -15,13 +15,16 @@ var CDP = require('chrome-remote-interface');
 var os = require('os');
 var fs = require('fs');
 
+var NOT_HEADLESS = parseInt(process.env.NOT_HEADLESS);
+var DONT_UNLOAD = parseInt(process.env.DONT_UNLOAD);
+
 var Browser = exports.Browser = function () {
 	function Browser(init) {
 		var _this = this;
 
 		_classCallCheck(this, Browser);
 
-		var defaults = ['--no-sandbox', process.env.NOT_HEADLESS ? null : '--disable-gpu', process.env.NOT_HEADLESS ? null : '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'].filter(function (x) {
+		var defaults = ['--no-sandbox', NOT_HEADLESS ? null : '--disable-gpu', NOT_HEADLESS ? null : '--headless', '--enable-automation', '--blink-settings=imagesEnabled=false'].filter(function (x) {
 			return x;
 		});
 
@@ -131,7 +134,7 @@ var Browser = exports.Browser = function () {
 							expression: '(' + listenForRenderEvent + ')(' + settings.timeout + ')',
 							awaitPromise: true
 						}).then(function (result) {
-							process.env.DONT_UNLOAD && client.Page.navigate({ url: 'about:blank' });
+							DONT_UNLOAD || client.Page.navigate({ url: 'about:blank' });
 							client.close();
 							accept(result.result.value);
 						}).catch(function (err) {
